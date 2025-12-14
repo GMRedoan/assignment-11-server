@@ -25,11 +25,11 @@ app.get('/', (req, res) => {
 
 async function run() {
     try {
-        // await client.connect()
         const database = client.db('redCare_db')
         const districtsCollection = database.collection('districts')
         const upazilasCollection = database.collection('upazilas')
         const usersCollection = database.collection('users')
+        const donationReqCollection = database.collection('donationReq')
 
         // get all districts/upazilas api
         app.get('/districts_upazilas', async (req, res) => {
@@ -71,14 +71,60 @@ async function run() {
         app.patch('/users/:id', async (req, res) => {
             const id = req.params.id
             const updatedUser = req.body
-            delete updatedUser._id
-            const query =  { _id: new ObjectId(id) }
+            const query = { _id: new ObjectId(id) }
             const update = {
                 $set: updatedUser
             }
             const result = await usersCollection.updateOne(query, update)
             res.send(result)
         })
+
+        // Add donation Req in database
+        app.post('/donationReq', async (req, res) => {
+            const donationReqInfo = req.body
+            const result = await donationReqCollection.insertOne(donationReqInfo)
+            res.send(result)
+        })
+
+        // get all donation req api
+        app.get('/donationReq', async (req, res) => {
+            const cursor = donationReqCollection.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
+        app.get('/donationReqDetails/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await donationReqCollection.findOne(query)
+            res.send(result)
+        });
+
+        // update donation req 
+        app.patch('/donationReqDetails/:id', async (req, res) => {
+            const id = req.params.id
+            const updateDonationReq = req.body
+            const query = { _id: new ObjectId(id) }
+            const update = {
+                $set: updateDonationReq
+            }
+            const result = await donationReqCollection.updateOne(query, update)
+            res.send(result)
+        })
+
+        // get user donation req by email api
+        app.get('/donationReq/:email', async (req, res) => {
+            const email = req.params.email
+            const limit = parseInt(req.query.limit)
+            const query = { requesterEmail: email }
+            let cursor = donationReqCollection.find(query)
+            if (!isNaN(limit)) {
+                cursor = cursor.limit(limit)
+            }
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
