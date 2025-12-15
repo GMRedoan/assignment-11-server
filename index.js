@@ -52,7 +52,6 @@ async function run() {
             res.send(result)
         })
 
-
         app.post('/users', async (req, res) => {
             const userInfo = req.body
             const email = req.body.email
@@ -109,6 +108,14 @@ async function run() {
                 $set: updateDonationReq
             }
             const result = await donationReqCollection.updateOne(query, update)
+            res.send(result)
+        })
+
+        // delete donation req
+        app.delete('/donationReqDetails/:id', async (req, res) => {
+            const id = req.params.id
+            const query =  { _id: new ObjectId(id) }
+            const result = await donationReqCollection.deleteOne(query)
             res.send(result)
         })
 
