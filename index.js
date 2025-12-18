@@ -134,6 +134,12 @@ async function run() {
         })
 
         // funds
+        app.get('/funds', async(req, res) => {
+            const cursor = fundsCollection.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
         app.post('/funds', async (req, res) => {
             const fundsInfo = req.body
             const result = await fundsCollection.insertOne(fundsInfo)
