@@ -30,6 +30,7 @@ async function run() {
         const upazilasCollection = database.collection('upazilas')
         const usersCollection = database.collection('users')
         const donationReqCollection = database.collection('donationReq')
+        const fundsCollection = database.collection('funds')
 
         // get all districts/upazilas api
         app.get('/districts_upazilas', async (req, res) => {
@@ -114,7 +115,7 @@ async function run() {
         // delete donation req
         app.delete('/donationReqDetails/:id', async (req, res) => {
             const id = req.params.id
-            const query =  { _id: new ObjectId(id) }
+            const query = { _id: new ObjectId(id) }
             const result = await donationReqCollection.deleteOne(query)
             res.send(result)
         })
@@ -132,6 +133,12 @@ async function run() {
             res.send(result)
         })
 
+        // funds
+        app.post('/funds', async (req, res) => {
+            const fundsInfo = req.body
+            const result = await fundsCollection.insertOne(fundsInfo)
+            res.send(result)
+        })
 
         // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
