@@ -4,6 +4,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 3000;
+const stripe = require('stripe')(process.env.STRIPE_SECRET);
+const crypto = require('crypto')
 
 // middleware
 app.use(cors())
