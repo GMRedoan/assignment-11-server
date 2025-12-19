@@ -4,9 +4,9 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 3000;
-const stripe = require('stripe')(process.env.STRIPE_SECRET);
-const crypto = require('crypto')
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const crypto = require('crypto');
+ 
 // middleware
 app.use(cors())
 app.use(express.json())
@@ -136,17 +136,40 @@ async function run() {
         })
 
         // funds
-        app.get('/funds', async(req, res) => {
+        app.get('/funds', async (req, res) => {
             const cursor = fundsCollection.find()
             const result = await cursor.toArray()
             res.send(result)
         })
 
-        app.post('/funds', async (req, res) => {
-            const fundsInfo = req.body
-            const result = await fundsCollection.insertOne(fundsInfo)
-            res.send(result)
-        })
+        app.post("/funds", async (req, res) => {
+            const { funderName, fundAmount, funderEmail } = req.body;
+            const amount = parseInt(fundAmount)
+
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ["card"],
+                line_items: [
+                    {
+                        price_data: {
+                            currency: "usd",
+                            product_data: {
+                                name: "Donation Fund",
+                            },
+                            unit_amount: amount * 100,
+                        },
+                        quantity: 1,
+                    },
+                ],
+                mode: "payment",
+                customer_email: funderEmail,
+                metadata: { funderName },
+                success_url: `${process.env.SITE_DOMAIN}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${process.env.SITE_DOMAIN}/payment-cancelled`,
+            });
+
+            res.send({ url: session.url });
+        });
+
 
         // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
