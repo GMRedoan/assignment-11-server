@@ -6,7 +6,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const crypto = require('crypto');
- 
+
 // middleware
 app.use(cors())
 app.use(express.json())
@@ -142,7 +142,7 @@ async function run() {
             res.send(result)
         })
 
-        app.post("/funds", async (req, res) => {
+        app.post("/create-payment-checkout", async (req, res) => {
             const { funderName, fundAmount, funderEmail } = req.body;
             const amount = parseInt(fundAmount)
 
@@ -168,7 +168,27 @@ async function run() {
             });
 
             res.send({ url: session.url });
-        });
+        })
+
+        app.post('/payment-success', async (req, res) => {
+            const { session_id } = req.query
+            const session = await stripe.checkout.sessions.retrieve(
+                 session_id
+            );
+            const transactionId = session.payment_intent
+            if(session.payment_status == 'paid'){
+                const paymentInfo = {
+                    DonorEmail : session.customer-email,
+                    amount : session.amount_total/100,
+                    currency : session.currency,
+                    transactionId,
+                    paymentStatus : session.payment_status,
+                    paidAt : new Date()
+                }
+                const result = await fundsCollection.insertOne(paymentInfo)
+                return res.send(result)
+            }
+        })
 
 
         // await client.db("admin").command({ ping: 1 });
