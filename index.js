@@ -178,7 +178,7 @@ async function run() {
             const transactionId = session.payment_intent
             if(session.payment_status == 'paid'){
                 const paymentInfo = {
-                    DonorEmail : session.customer-email,
+                    DonorEmail : session.customer_email,
                     amount : session.amount_total/100,
                     currency : session.currency,
                     transactionId,
