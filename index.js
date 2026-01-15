@@ -170,6 +170,7 @@ async function run() {
             res.send({ url: session.url });
         })
 
+        // add funds info in database
         app.post('/payment-success', async (req, res) => {
             const { session_id } = req.query
             const session = await stripe.checkout.sessions.retrieve(
